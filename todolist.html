@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>To Do List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./vjs_todolist.compact.css">
+</head>
+<body>
+    <form class="inputForm">
+        <input type="text" class="input" placeholder="WRITE DOWN & ENTER">
+    </form>
+    <ul class="lists"></ul>
+    <button class="storageReset">스토리지 청소</button>
+    
+<script>
+    const form = document.querySelector('.inputForm'),
+    input = document.querySelector('.input'),
+    ul = document.querySelector('.lists');
+
+    let listArray = [];
+    
+    //### 삭제 구현 함수 ###
+    const deleteItem = ( event ) => {
+        const li = event.target.parentNode;
+        ul.removeChild(li);
+        const clean = listArray.filter(( v ) => {
+           return v.id !== parseInt(li.id);
+        })
+        listArray = clean;
+        saveItemToStorage();
+    }
+
+    //### 로컬스토리지 저장 함수 ###
+    const saveItemToStorage = () => {
+        localStorage.setItem('todo',JSON.stringify(listArray));
+    }
+
+    //### 로컬스토리지 리셋 함수 ###
+    const resetItemToStorage = () => {
+        localStorage.clear();
+        location.reload();
+    }
+
+    //### 화면 렌더 및 로컬스토리지용 객체 함수 ###
+    const renderTool = ( text ) => {
+        const li = document.createElement('li');
+        const deleteBtn = document.createElement('button');
+        const storageReset = document.getElementsByClassName('storageReset')[0];
+        const contents = document.createElement('span');
+        const increaseId = listArray.length + 1;
+
+        contents.innerText = text;
+        li.appendChild(contents);
+        deleteBtn.innerText = "X";
+        deleteBtn.addEventListener('click', deleteItem);
+        storageReset.addEventListener('click', resetItemToStorage);
+
+        li.appendChild(deleteBtn);
+        li.id = increaseId;
+        ul.appendChild(li);
+        
+        const result = {
+            text: text,
+            id: increaseId
+        }
+        listArray.push(result);
+        saveItemToStorage();
+    }
+
+    //### 서브밋 함수 ###
+    const submitItem = ( event ) => {
+        event.preventDefault();
+        const text = input.value;
+        renderTool(text);
+        input.value = "";
+    }
+
+    //### 로드 함수 ###
+    const loadItem = () => {
+        const getLocal = localStorage.getItem('todo');
+        if( getLocal ) {
+            const parsed = JSON.parse( getLocal );
+            parsed.forEach(( v ) => {
+                renderTool( v.text );
+            })
+        }
+    }
+
+    //### 이닛 함수 ###
+    const init = () => {
+        form.addEventListener('submit', submitItem);
+        loadItem();
+    }
+    init();
+
+</script>
+</body>
+</html>
